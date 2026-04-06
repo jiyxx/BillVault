@@ -1,0 +1,54 @@
+# Docker Interview Guide for BillVault
+
+## 1. What is Docker? (In plain English)
+Imagine you write a recipe (your code) in your kitchen (your computer). It works perfectly because you have your specific oven, your specific brands of ingredients, and your specific pans. But when you give the recipe to your friend, their food tastes different because they have a different oven and different ingredients.
+
+**Docker** solves this by packaging your recipe *along with* the oven, the exact ingredients, and the pans into a sealed portable box called a **Container**. When you give this box to anyone—or put it on a cloud server—it works *exactly* the same as it did on your computer, no matter what operating system they use.
+
+- **Image**: The blueprint for the box (e.g., "I need Linux, Node.js, these specific code files, and expose port 5000"). This is what your `Dockerfile` essentially writes.
+- **Container**: The actual running box based on the blueprint (the image).
+
+## 2. Why did we use it in BillVault?
+BillVault has two separate pieces that need to run simultaneously:
+1. **Frontend (Next.js)**: Your React UI running on port 3000.
+2. **Backend (Express.js)**: Your Node API running on port 5000.
+
+Without Docker, another developer (or the production server hosting your app) would have to manually install Node.js, navigate to the `server` folder, run `npm install`, navigate to `client`, run `npm install`, and then carefully start both servers. They might encounter errors if they simply have a different version of Node.js installed!
+
+With Docker (`docker-compose.yml`), one single, simple command (`docker-compose up`) builds both pieces, connects them together over a virtual network, and starts them automatically in a perfectly controlled environment.
+
+## 3. How BillVault's Specific Docker Setup Works
+
+### The Server (`server/Dockerfile`)
+- **Base image**: `FROM node:20-alpine`. Alpine is a tiny, lightweight version of Linux with Node.js 20 installed.
+- **What it does**: It copies your `package.json`, securely installs dependencies (`npm ci`), copies your backend code, creates an `uploads` folder for your receipt images, and tells Docker to run `node src/app.js` on port 5000.
+
+### The Client (`client/Dockerfile`)
+- **Multi-stage Build**: This is an advanced best-practice! 
+  - **Stage 1 (Builder)**: It creates a heavy container to install all dependencies and run `npm run build` (which compiles your Next.js code into an optimized production format).
+  - **Stage 2 (Runner)**: It creates a *brand new, empty* container and only copies the compiled production files from Stage 1 over. It leaves all the heavy development dependencies behind. This keeps your final web container very small, fast, and secure.
+
+### Docker Compose (`docker-compose.yml`)
+- This file acts as the "Manager" or "Orchestrator." It defines your two services: `api` and `web`.
+- It automatically creates a private sandbox network so the Next.js `web` container can securely talk to the `api` container.
+- It maps the internal container ports (3000 and 5000) to your actual computer's ports so you can view it in your browser.
+- It safely reads your `.env` files and injects those variables into the containers.
+
+---
+
+## 4. Common Interview Questions & Answers
+
+**Q: Tell me about your experience with Docker in your recent project.**
+**A:** "In my BillVault project, I containerized a full-stack JavaScript application consisting of a Next.js frontend and an Express.js backend. I wrote individual `Dockerfile`s for each service—utilizing multi-stage builds for the Next.js client to minimize the production image size. For local orchestration and deployment, I configured a `docker-compose.yml` file to easily spin up both the API and Web services, handle environment variable injection, and set up port volumes."
+
+**Q: Why did you use multi-stage builds for the Next.js frontend?**
+**A:** "A Next.js frontend requires a lot of heavy dependencies (like Webpack, Babel, etc.) to *build* the application, but it doesn't need those to actually *run* the compiled code. Multi-stage builds let me use a heavy image to compile the app, and then extract only the built `.next/standalone` files into a fresh, lightweight production image. This drastically reduces the image size, limits security vulnerabilities, and saves server deployment space."
+
+**Q: In your `docker-compose.yml` file, what does the `depends_on` flag do?**
+**A:** "In my setup, the `web` service has a `depends_on: api` configuration. This tells Docker Compose to verify that the Express server container is started *before* starting the Next.js frontend container. This ensures that when the frontend boots up and wants to connect to the backend, the API is already running to accept connections."
+
+**Q: What is the Alpine version of Node (`node:20-alpine`), and why did you use it instead of the regular one?**
+**A:** "Alpine Linux is a security-oriented, extremely lightweight Linux distribution. The `alpine` variant of the Node image is usually around 30-40 megabytes, compared to the regular default Node image which can be close to 1 gigabyte. Using Alpine makes building, pushing, and pulling images drastically faster, and having a smaller toolset minimizes the surface area for security vulnerabilities."
+
+**Q: How did you handle environment variables and secrets with Docker?**
+**A:** "I utilized `.env` files which are intentionally kept out of Git via `.gitignore`. Inside the `docker-compose.yml` file, I used the `env_file:` directive on the `api` service to pass the environment variables (like my Database credentials and JWT secrets) directly from my local filesystem into the container's environment securely."
