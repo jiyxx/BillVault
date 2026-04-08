@@ -1,22 +1,7 @@
-const natural = require('natural');
-
-/**
- * Message Parser — extracts structured expense data from
- * SMS and WhatsApp transaction messages.
- *
- * How it works:
- * 1. Normalizes the text (lowercase, remove extra spaces)
- * 2. Uses regex patterns to find amounts (e.g., "$45.00", "Rs.500")
- * 3. Uses regex + NLP tokenizer to find merchant names
- * 4. Parses dates from the text
- * 5. Returns structured data with a confidence score
- *
- * Example inputs it handles:
- * - "You spent $45.00 at Starbucks on 01/15/2026"
- * - "Rs.500 debited from your account for Amazon purchase"
- * - "Payment of USD 120.00 to Netflix successful"
- */
-const tokenizer = new natural.WordTokenizer();
+// Simple tokenizer: splits into "words" and keeps letters/numbers/&/'/.-
+function tokenize(text) {
+  return (text.match(/[A-Za-z0-9][A-Za-z0-9&'.-]*/g) || []);
+}
 
 const messageParser = {
   /**
@@ -106,9 +91,9 @@ const messageParser = {
       }
     }
 
-    // Fallback: use NLP tokenizer to find capitalized words
+    // Fallback: use regex tokenizer to find capitalized words
     // that might be merchant names
-    const tokens = tokenizer.tokenize(text);
+    const tokens = tokenize(text);
     const capitalized = tokens.filter((t) => /^[A-Z][a-z]/.test(t) && t.length > 2);
     if (capitalized.length > 0) {
       return capitalized.slice(0, 2).join(' ');
