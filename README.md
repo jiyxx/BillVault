@@ -36,8 +36,6 @@ BillVault leverages a modern, robust technology stack to ensure performance, sca
 - **OCR Engine**: Tesseract.js
 - **NLP Processing**: `natural` (Node.js library)
 - **Document Generation**: PDFKit (PDFs) & ExcelJS (Excel spreadsheets)
-- **File Uploads**: Multer
-- **Validation**: Joi
 - **Auth Tokens**: jsonwebtoken (JWT)
 
 ### Testing & DevOps
