@@ -22,14 +22,14 @@ export default function Dashboard() {
         
         // Fetch recent expenses
         const expensesRes = await api.get('/expenses?limit=5');
-        if (expensesRes.data.status === 'success') {
-          setRecentExpenses(expensesRes.data.data.expenses);
+        if (expensesRes.data.expenses) {
+          setRecentExpenses(expensesRes.data.expenses);
         }
 
         // Fetch active trip
         const tripRes = await api.get('/trips/active');
-        if (tripRes.data.status === 'success' && tripRes.data.data) {
-          setActiveTrip(tripRes.data.data);
+        if (tripRes.data.trip) {
+          setActiveTrip(tripRes.data.trip);
         }
 
         // Fetch basic trends (last 30 days)

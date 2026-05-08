@@ -20,8 +20,8 @@ export default function Trips() {
     try {
       setLoading(true);
       const res = await api.get('/trips');
-      if (res.data.status === 'success') {
-        const sortedTrips = res.data.data.sort((a, b) => {
+      if (res.data.trips) {
+        const sortedTrips = res.data.trips.sort((a, b) => {
           // Active first, then by date desc
           if (a.isActive && !b.isActive) return -1;
           if (!a.isActive && b.isActive) return 1;

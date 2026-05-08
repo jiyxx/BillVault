@@ -14,7 +14,7 @@ router.use(authenticate);
 router.get('/spending', async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
-    const userId = req.user.userId;
+    const userId = req.userId;
     
     const spending = await analyticsService.getSpendingByCategory(userId, startDate, endDate);
     
@@ -35,7 +35,7 @@ router.get('/spending', async (req, res, next) => {
 router.get('/trends', async (req, res, next) => {
   try {
     const { months } = req.query;
-    const userId = req.user.userId;
+    const userId = req.userId;
     
     const parsedMonths = months ? parseInt(months, 10) : 6;
     const trends = await analyticsService.getMonthlyTrends(userId, parsedMonths);

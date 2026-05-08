@@ -37,13 +37,13 @@ export default function Analytics() {
         
         // Fetch spending by category
         const spendRes = await api.get(`/analytics/spending?startDate=${startDate.toISOString()}`);
-        if (spendRes.data.status === 'success') {
+        if (spendRes.data.data) {
             setSpendingData(spendRes.data.data);
         }
 
         // Fetch monthly trends (last 6 months)
         const trendsRes = await api.get('/analytics/trends?months=6');
-        if (trendsRes.data.status === 'success') {
+        if (trendsRes.data.data) {
             // Format month strings for better display
             const formattedTrends = trendsRes.data.data.map(item => {
                 const [year, month] = item.month.split('-');

@@ -40,7 +40,7 @@ const categoryDal = {
     await userCategoriesRef(userId).doc(categoryId).set(category.toFirestore());
     return category;
   },
-
+  
   async findByKeyword(keyword) {
     // Check global categories first, then user categories
     const defaults = await this.getDefaults();
